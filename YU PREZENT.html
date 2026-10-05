@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YU Tasks — Yessenov University</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f7fc;--card:#fff;--tx:#12203f;--mut:#64708f;--pri:#1b3a8f;--pl:#e8eefc;--on:#fff;--acc:#f5b301;--ok:#18a06a;--bd:#e3e8f3;--sh:0 8px 30px rgba(18,32,63,.08);--g1:#0f1f4d;--g2:#3b4fd8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1020;--card:#141b31;--tx:#e9edf8;--mut:#98a4c4;--pri:#8ba3ff;--pl:#1d2748;--on:#0b1020;--bd:#252f4d;--sh:0 8px 30px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#0b1020;--card:#141b31;--tx:#e9edf8;--mut:#98a4c4;--pri:#8ba3ff;--pl:#1d2748;--on:#0b1020;--bd:#252f4d;--sh:0 8px 30px rgba(0,0,0,.35)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 'Golos Text',system-ui,-apple-system,"Segoe UI",sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}svg{flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-weight:600;transition:transform .15s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--sh)}.btn:active{transform:scale(.97)}
+.btn.p{background:var(--pri);color:var(--on);border-color:var(--pri)}.btn.a{background:var(--acc);color:#12203f;border-color:var(--acc)}.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.g{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+select,input[type=text],input[type=number]{font:inherit;min-height:44px;padding:0 12px;border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);max-width:100%}
+/* landing */
+.lh{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--bd)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+.lh .wrap{display:flex;align-items:center;gap:20px;min-height:68px}.lh nav{display:flex;gap:22px;margin-left:auto;font-weight:500}.lh nav a{color:var(--tx);text-decoration:none;opacity:.8}.lh nav a:hover{opacity:1}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;cursor:pointer;background:none;border:0;color:inherit;padding:0}
+.lg{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--g2),var(--g1));color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));padding:84px 0 96px}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:drift 14s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(60px,40px) scale(1.15)}}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.badge{display:inline-block;padding:6px 14px;border-radius:30px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);font-size:13px;font-weight:600;margin-bottom:20px}
+h1{font-size:clamp(34px,5.2vw,58px);line-height:1.06;letter-spacing:-.025em;margin:0 0 18px;font-weight:800}
+h1 em{font-style:normal;background:linear-gradient(90deg,#ffd666,#ff9f5a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:19px;opacity:.9;max-width:540px;margin:0 0 28px}
+.fl{position:relative;height:340px}
+.fc{position:absolute;width:290px;padding:16px;border-radius:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(12px);animation:flo 6s ease-in-out infinite alternate;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.fc b{display:block}.fc span{font-size:13px;opacity:.8}.fc i{float:right;font-style:normal;font-weight:800;color:#ffd666}
+@keyframes flo{to{transform:translateY(-16px)}}
+.sec{padding:80px 0}.sec h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.02em;margin:0 0 8px}.sec .sub{color:var(--mut);margin:0 0 34px;font-size:17px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.step{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:24px;transition:transform .25s,box-shadow .25s}.step:hover{transform:translateY(-6px);box-shadow:var(--sh)}
+.step .nm{width:40px;height:40px;border-radius:12px;background:var(--pl);color:var(--pri);display:grid;place-items:center;font-weight:800;margin-bottom:14px}
+.step h3{margin:0 0 6px;font-size:18px}.step p{margin:0;color:var(--mut)}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}.rv.in{opacity:1;transform:none}
+.rl{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border-radius:26px;padding:44px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.rl h2{grid-column:1/-1;color:#fff}.rl button{text-align:left;padding:22px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;transition:transform .2s,background .2s}.rl button:hover{transform:translateY(-4px);background:rgba(255,255,255,.2)}
+.rl b{display:block;font-size:18px;margin-bottom:4px}.rl span{opacity:.85;font-size:14px}
+footer.lf{padding:28px 0 40px;color:var(--mut);font-size:13px;text-align:center}
+/* app */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+aside{background:var(--card);border-right:1px solid var(--bd);padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+aside .logo{padding:0 8px 18px}
+aside button.t{display:flex;gap:12px;align-items:center;width:100%;border:0;background:none;color:var(--tx);padding:11px 12px;border-radius:12px;font-weight:500;transition:background .2s,transform .15s}
+aside button.t:hover{background:var(--pl);transform:translateX(3px)}aside button.t.on{background:var(--pl);color:var(--pri);font-weight:700}
+.sb{margin-top:auto;font-size:12px;color:var(--mut);padding:8px}.sb button{background:none;border:0;color:var(--pri);padding:0;text-decoration:underline}
+.top{display:flex;gap:10px;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid var(--bd);flex-wrap:wrap;position:sticky;top:0;z-index:5}
+.top .sp{flex:1}.bal{background:var(--acc);color:#12203f;font-weight:800;padding:8px 16px;border-radius:30px}
+main{padding:26px 28px 40px;max-width:1100px}
+main>*{animation:up .5s cubic-bezier(.2,.7,.3,1) both}main>*:nth-child(2){animation-delay:.06s}main>*:nth-child(3){animation-delay:.12s}main>*:nth-child(4){animation-delay:.18s}
+@keyframes up{from{opacity:0;transform:translateY(18px)}}
+h2.h{font-size:26px;letter-spacing:-.02em;margin:0 0 4px}.sb2{color:var(--mut);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:18px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:8px;transition:transform .25s,border-color .2s}
+.card.c{cursor:pointer}.card.c:hover{transform:translateY(-5px);border-color:var(--pri)}
+.card h3{margin:0;font-size:16px;line-height:1.3}.mut{color:var(--mut);font-size:13px}.card h4{margin:0 0 6px;font-size:16px}
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:var(--pl);color:var(--pri)}
+.d1{background:#d6f3e6;color:#0d6b45}.d2{background:#fff0c7;color:#7a5600}.d3{background:#fbd9d9;color:#8a1c1c}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.end{margin-top:auto;justify-content:space-between;padding-top:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:16px}.stat b{display:block;font-size:28px;color:var(--pri);line-height:1.2}
+.pbar{height:9px;background:var(--bd);border-radius:6px;overflow:hidden}.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g2),var(--ok));border-radius:6px;transition:width 1s cubic-bezier(.2,.7,.3,1)}
+.two{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px}
+.tx{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}.tx:last-child{border:0}.plus{color:var(--ok);font-weight:700}.minus{color:#d04a3a;font-weight:700}
+table{width:100%;border-collapse:collapse}td,th{padding:9px 6px;border-bottom:1px solid var(--bd);text-align:left;font-size:14px}th{color:var(--mut);font-weight:600}
+.ov{position:fixed;inset:0;background:rgba(8,12,26,.6);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px;z-index:40;animation:fi .25s}
+.md{background:var(--card);border-radius:22px;padding:26px;max-width:520px;width:100%;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:12px;animation:pop .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes fi{from{opacity:0}}@keyframes pop{from{opacity:0;transform:scale(.92) translateY(14px)}}
+.form{display:grid;gap:12px;max-width:540px}.form label{display:grid;gap:5px;font-size:13px;color:var(--mut)}
+.donut{width:140px;height:140px;border-radius:50%;margin:8px auto;animation:pop .9s both;-webkit-mask:radial-gradient(circle 44px,transparent 98%,#000 100%);mask:radial-gradient(circle 44px,transparent 98%,#000 100%)}
+.leg{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--mut);flex-wrap:wrap}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:dr 1.6s .2s ease forwards}@keyframes dr{to{stroke-dashoffset:0}}
+.toast{position:fixed;left:50%;transform:translate(-50%,20px);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:11px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:60;font-weight:500}.toast.s{opacity:1;transform:translate(-50%,0)}
+@media(max-width:860px){.hero .wrap,.two,.rl{grid-template-columns:1fr}.fl{display:none}.lh nav{display:none}.lh .wrap{justify-content:space-between}
+.app{grid-template-columns:1fr}aside{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;overflow-x:auto;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:10;border-right:0;border-top:1px solid var(--bd)}
+aside .logo,.sb{display:none}aside button.t{flex-direction:column;gap:2px;font-size:11px;padding:6px 12px;width:auto;white-space:nowrap}main{padding:18px 14px 96px}.top{padding:10px 14px}.rl{padding:26px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+</style></head><body>
+<div id="land">
+<div class="lh"><div class="wrap"><button class="logo" onclick="scrollTo(0,0)"><span class="lg">YU</span>YU Tasks</button><nav><a href="#how">Как это работает</a><a href="#roles">Для кого</a></nav><button class="btn" id="th1" aria-label="Тема">◐</button><button class="btn p" onclick="enter('stu')">Открыть платформу</button></div></div>
+<section class="hero"><div class="blob" style="width:380px;height:380px;background:#f5b301;top:-120px;right:6%"></div><div class="blob" style="width:320px;height:320px;background:#7b5cff;bottom:-140px;left:4%;animation-delay:-5s"></div>
+<div class="wrap"><div><div class="badge">Yessenov University · студенческая платформа</div><h1>Решайте задачи университета и получайте <em>EC</em></h1><p class="lead">Деканаты и кафедры публикуют запросы, студенты берут их в одиночку или командой, а за результат получают внутренние монеты для магазина, кафе и курсов.</p><div class="row"><button class="btn a" onclick="enter('stu')">Войти как студент</button><button class="btn g" onclick="enter('rec')">Посмотреть аналитику</button></div></div>
+<div class="fl"><div class="fc" style="top:0;left:10%"><i>500 EC</i><b>Починить принтер</b><span>Лёгкая · Корпус А</span></div><div class="fc" style="top:110px;left:40%;animation-delay:-2s"><i>2 500 EC</i><b>Скрипт на Python</b><span>Средняя · Кафедра ИТ</span></div><div class="fc" style="top:230px;left:6%;animation-delay:-4s"><i>6 500 EC</i><b>Сайт для клуба</b><span>Сложная · команда</span></div></div></div></section>
+<section class="sec" id="how"><div class="wrap"><h2 class="rv">Как это работает</h2><p class="sub rv">От запроса до награды за четыре шага.</p>
+<div class="g4"><div class="step rv"><div class="nm">1</div><h3>Запрос</h3><p>Сотрудник публикует задачу, выбирает сложность и награду в EC.</p></div><div class="step rv"><div class="nm">2</div><h3>Отклик</h3><p>Студент берёт задачу сам или собирает команду и делит награду.</p></div><div class="step rv"><div class="nm">3</div><h3>Приёмка</h3><p>Автор проверяет результат, спорные случаи решает деканат.</p></div><div class="step rv"><div class="nm">4</div><h3>Награда</h3><p>EC и рейтинг растут, монеты обмениваются на призы.</p></div></div></div></section>
+<section class="sec" id="roles" style="padding-top:0"><div class="wrap"><div class="rl rv"><h2>Попробуйте платформу в любой роли</h2><button onclick="enter('stu')"><b>Студент</b><span>Задачи, команды, магазин EC</span></button><button onclick="enter('dean')"><b>Деканат и преподаватель</b><span>Запросы и приёмка работ</span></button><button onclick="enter('rec')"><b>Ректор и владелец</b><span>Аналитика по корпусам</span></button></div></div></section>
+<footer class="lf">YU Tasks · прототип · все данные демонстрационные · EC — закрытая бонусная единица вуза</footer></div>
+
+<div class="app" id="app" hidden><aside id="nav"></aside><div><div class="top"><b id="ttl">Yessenov University</b><span class="sp"></span><select id="role" aria-label="Роль"><option value="stu">Студент</option><option value="dean">Деканат / преподаватель</option><option value="rec">Ректор / владелец</option></select><button class="btn" id="th2" aria-label="Тема">◐</button><span class="bal" id="bal"></span></div><main id="main"></main></div></div>
+<div id="m"></div><div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),n=x=>x.toLocaleString('ru'),RM=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+const DN={1:'Лёгкая',2:'Средняя',3:'Сложная'},ST={open:'Открыта',taken:'В работе',review:'На проверке',done:'Принята'},B=['Корпус А','Корпус Б','Корпус В','Корпус Г'],PEERS=['Динара К.','Ерлан М.'];
+const KEY='yu-pro-v1';
+function load(){const d={bal:3200,role:'stu',tab:'home',q:'',fd:0,fb:'',done:7,
+tx:[['Фотоотчёт турнира',700,'+'],['Афиша для фестиваля',1500,'+'],['Худи Yessenov',-9000,'-'],['Настройка Wi-Fi в читальном зале',2000,'+']],
+tasks:[
+{id:1,t:'Починить принтер в аудитории 214',a:'Деканат ФИТ',b:'Корпус А',d:1,ec:500,h:2,sk:'техника',x:'Принтер не печатает: проверить картридж, драйвер и сетевое подключение.',s:'open'},
+{id:2,t:'Оцифровать архив приказов кафедры',a:'Кафедра экономики',b:'Корпус Б',d:1,ec:600,h:3,sk:'сканирование',x:'Отсканировать около 120 страниц и разложить файлы по годам.',s:'open'},
+{id:3,t:'Помочь на регистрации конференции',a:'Деканат',b:'Корпус А',d:1,ec:500,h:2,sk:'коммуникация',x:'Встречать гостей, выдавать бейджи, направлять в аудитории.',s:'open'},
+{id:4,t:'Настроить компьютерный класс',a:'ИТ-отдел',b:'Корпус В',d:2,ec:2000,h:6,sk:'ИТ, сети',x:'Установить ПО на 15 ПК, настроить сеть и учётные записи.',s:'open'},
+{id:5,t:'Скрипт на Python для данных кафедры',a:'Проф. Ахметов',b:'Корпус А',d:2,ec:2500,h:8,sk:'Python',x:'Автоматизировать сведение таблиц успеваемости из Excel в один отчёт.',s:'open'},
+{id:6,t:'Афиша для студенческого фестиваля',a:'Студсовет',b:'Корпус Б',d:2,ec:1500,h:4,sk:'дизайн',x:'Афиша A3 и три баннера для соцсетей по готовому брифу.',s:'open'},
+{id:7,t:'Сайт для студенческого клуба',a:'Клубы',b:'Корпус В',d:3,ec:6500,h:30,sk:'веб',x:'Лендинг клуба с формой записи и афишей мероприятий.',s:'open',team:1},
+{id:8,t:'Организация дня открытых дверей',a:'Деканат',b:'Корпус Г',d:3,ec:7000,h:40,sk:'организация, SMM',x:'Программа, волонтёры, фотозоны и освещение события в соцсетях.',s:'open',team:1},
+{id:9,t:'Сервис записи на консультации',a:'Кафедра ИТ',b:'Корпус А',d:3,ec:8000,h:50,sk:'веб, БД',x:'Внутренний сервис, где студенты записываются к преподавателям.',s:'open',team:1}]};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s)Object.assign(d,{bal:s.bal,done:s.done,tx:s.tx,tasks:s.tasks})}catch(e){}return d}
+let S=load();S.shown=S.bal;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({bal:S.bal,done:S.done,tx:S.tx,tasks:S.tasks}))}catch(e){}};
+const IC={home:'M3 11l9-8 9 8v10h-6v-6H9v6H3z',free:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',my:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',shop:'M5 8h14l-1 12H6zM9 8a3 3 0 016 0',plus:'M12 5v14M5 12h14',check:'M5 13l4 4 10-10',chart:'M4 20V10M10 20V4M16 20v-8M22 20H2',book:'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3zM5 17a3 3 0 013-3h11'};
+const ico=k=>`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[k]}"/></svg>`;
+const tabs={stu:[['home','home','Главная'],['free','free','Фриланс'],['my','my','Мои задачи'],['shop','shop','Магазин'],['rules','book','Правила']],dean:[['new','plus','Запрос'],['rev','check','Проверка'],['rules','book','Правила']],rec:[['dash','chart','Аналитика'],['rules','book','Правила']]};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.k);toast.k=setTimeout(()=>t.classList.remove('s'),2400)}
+function boom(){if(RM())return;const c=['#f5b301','#3b4fd8','#18a06a','#e8604c'];for(let i=0;i<36;i++){const e=document.createElement('i'),a=Math.random()*6.28,d=120+Math.random()*220;e.style.cssText=`position:fixed;left:50%;top:40%;width:8px;height:12px;background:${c[i%4]};z-index:70;border-radius:2px;pointer-events:none`;document.body.appendChild(e);e.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+160}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:1100+Math.random()*500,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>e.remove()}}
+function count(a,b){const el=$('#bal'),w=v=>el.textContent=n(v)+' EC';if(a===b||RM())return w(b);const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/800);w(Math.round(a+(b-a)*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(f)})(t0)}
+function theme(){const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=d?'light':'dark'}
+$('#th1').onclick=$('#th2').onclick=theme;
+const lvl=()=>{const xp=S.done*100;return[Math.floor(xp/500)+1,xp%500/5]};
+const openT=()=>S.tasks.filter(k=>k.s==='open'&&(!S.fd||k.d==S.fd)&&(!S.fb||k.b===S.fb)&&(!S.q||k.t.toLowerCase().includes(S.q.toLowerCase())));
+function card(k,btn,clk){return `<div class="card ${clk?'c':''}" ${clk?`data-open="${k.id}"`:''}><div class="row"><span class="tag d${k.d}">${DN[k.d]}</span><span class="tag">${ST[k.s]}</span>${k.team?'<span class="tag">команда</span>':''}</div><h3>${esc(k.t)}</h3><div class="mut">${esc(k.a)} · ${esc(k.b)} · ~${k.h} ч<br>Навыки: ${esc(k.sk)}</div><div class="row end"><b style="font-size:18px">${n(k.ec)} EC</b>${btn||''}</div></div>`}
+const grid=()=>openT().map(k=>card(k,'',1)).join('')||'<p class="mut">Ничего не найдено.</p>';
+function line(a,l){const W=420,H=170,m=Math.max(...a),p=a.map((v,i)=>[30+i*(W-50)/(a.length-1),H-28-v/m*(H-56)]);
+return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Закрытые задачи по месяцам"><path class="draw" pathLength="1" fill="none" stroke="var(--pri)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M${p.map(x=>x.join(' ')).join(' L')}"/>${p.map((x,i)=>`<circle cx="${x[0]}" cy="${x[1]}" r="4.5" fill="var(--pri)"/><text x="${x[0]}" y="${x[1]-10}" font-size="11" text-anchor="middle" fill="var(--tx)">${a[i]}</text><text x="${x[0]}" y="${H-6}" font-size="11" text-anchor="middle" fill="var(--mut)">${l[i]}</text>`).join('')}</svg>`}
+const bars=(a,l)=>{const m=Math.max(...a);return a.map((v,i)=>`<div style="display:grid;grid-template-columns:72px 1fr 40px;gap:10px;align-items:center;margin:8px 0"><span class="mut">${l[i]}</span><div class="pbar"><i data-w="${v/m*100}%"></i></div><b>${v}</b></div>`).join('')};
+const V={
+home(){const[l,p]=lvl(),r=openT().slice(0,3);return `<h2 class="h">Добро пожаловать, Айдана</h2><p class="sb2">Выполняйте задачи университета, копите EC и обменивайте их на призы.</p>
+<div class="stats"><div class="card stat"><span class="mut">Баланс</span><b>${n(S.bal)} EC</b></div><div class="card stat" style="flex-direction:row;align-items:center;gap:14px"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--bd)" stroke-width="8"/><circle class="ring" data-off="${213.6*(1-p/100)}" cx="42" cy="42" r="34" fill="none" stroke="var(--ok)" stroke-width="8" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 42 42)" style="transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.3,1)"/><text x="42" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="var(--tx)">${l}</text></svg><div><b style="font-size:17px">Уровень ${l}</b><div class="mut">${Math.round(p*5)} / 500 XP</div></div></div><div class="card stat"><span class="mut">Выполнено задач</span><b>${S.done}</b></div><div class="card stat"><span class="mut">Рейтинг</span><b>4,8</b></div></div>
+<div class="two"><div class="card"><h4>Рекомендуемые задачи</h4>${r.map(k=>`<div class="tx"><span>${esc(k.t)}<br><span class="mut">${esc(k.b)} · ${DN[k.d]}</span></span><b>${n(k.ec)} EC</b></div>`).join('')}<button class="btn p" data-go="free" style="margin-top:8px">Все задачи</button></div>
+<div class="card"><h4>История EC</h4>${S.tx.slice(0,6).map(t=>`<div class="tx"><span>${esc(t[0])}</span><span class="${t[2]=='+'?'plus':'minus'}">${t[2]=='+'?'+':''}${n(t[1])}</span></div>`).join('')}</div></div>`},
+free(){return `<h2 class="h">Фриланс</h2><p class="sb2">Нажмите на карточку, чтобы увидеть подробности.</p><div class="row" style="margin-bottom:16px"><input type="text" id="sq" placeholder="Поиск: Python, афиша…" value="${esc(S.q)}" style="flex:1 1 220px"><select id="fd"><option value="0">Любая сложность</option>${[1,2,3].map(i=>`<option value="${i}" ${S.fd==i?'selected':''}>${DN[i]}</option>`).join('')}</select><select id="fb"><option value="">Все корпуса</option>${B.map(b=>`<option ${S.fb===b?'selected':''}>${b}</option>`).join('')}</select></div><div class="grid" id="fg">${grid()}</div>`},
+my(){const L=S.tasks.filter(k=>k.mine);return `<h2 class="h">Мои задачи</h2><p class="sb2">Статусы и отправка на проверку.</p><div class="grid">${L.map(k=>card(k,k.s==='taken'?`<button class="btn p" data-sub="${k.id}">На проверку</button>`:`<span class="mut">${k.s==='review'?'Ждёт проверки':'Начислено'}</span>`)).join('')||'<p class="mut">Пока пусто. Возьмите задачу во вкладке «Фриланс».</p>'}</div>`},
+shop(){const it=[['Худи Yessenov',9000],['Футболка',4000],['Сумка-шоппер',3000],['Блокнот',1200],['Термос',3500],['Кофе в кафе (−30%)',600],['Курс: основы Python',5000],['Курс: Excel для учёбы',3000]];
+return `<h2 class="h">Магазин университета</h2><p class="sb2">Мерч, кафе и курсы. Оплата только внутренними EC.</p><div class="grid">${it.map(x=>`<div class="card"><h3>${x[0]}</h3><div class="row end"><b style="font-size:18px">${n(x[1])} EC</b><button class="btn p" data-buy="${x[0]}|${x[1]}" ${S.bal<x[1]?'disabled':''}>Обменять</button></div></div>`).join('')}</div>`},
+new(){return `<h2 class="h">Новый запрос</h2><p class="sb2">Студенты увидят задачу сразу после публикации.</p><div class="form"><label>Название<input type="text" id="nt" placeholder="Например: настроить проектор в аудитории 305"></label><label>Описание<input type="text" id="nx" placeholder="Что нужно сделать и какой результат ожидается"></label><label>Корпус<select id="nb">${B.map(b=>`<option>${b}</option>`).join('')}</select></label><label>Сложность<select id="nd"><option value="1">Лёгкая (~500 EC)</option><option value="2">Средняя (~2 000 EC)</option><option value="3">Сложная (от 6 000 EC)</option></select></label><label>Награда, EC<input type="number" id="ne" value="500" min="100"></label><button class="btn p" id="pub">Опубликовать</button><span class="mut">Остаток месячного лимита деканата: 48 000 EC</span></div>`},
+rev(){const L=S.tasks.filter(k=>k.s==='review');return `<h2 class="h">Проверка работ</h2><p class="sb2">EC начисляются студенту только после вашей приёмки.</p><div class="grid">${L.map(k=>card(k,`<button class="btn ok" data-acc="${k.id}">Принять</button>`)).join('')||'<p class="mut">Нет работ на проверке. Войдите как студент, возьмите задачу и отправьте её на проверку.</p>'}</div>`},
+dash(){const T=[['Динара К.',64,'Корпус А'],['Ерлан М.',58,'Корпус В'],['Айдана Н.',S.done*7,'Корпус А'],['Алишер Т.',44,'Корпус Г']].sort((a,b)=>b[1]-a[1]);
+return `<h2 class="h">Аналитика</h2><p class="sb2">Сводка для руководства. Данные демонстрационные.</p><div class="stats"><div class="card stat"><span class="mut">Закрыто задач (6 мес.)</span><b>${1465+S.tasks.filter(k=>k.s==='done').length}</b></div><div class="card stat"><span class="mut">Активных студентов</span><b>21%</b></div><div class="card stat"><span class="mut">Среднее время закрытия</span><b>3,8 дня</b></div><div class="card stat"><span class="mut">Успешно приняты</span><b>89%</b></div></div>
+<div class="two"><div class="card"><h4>Закрытые задачи по месяцам</h4>${line([120,185,150,260,340,410],['Апр','Май','Июн','Сен','Окт','Ноя'])}</div><div class="card"><h4>Сложность задач</h4><div class="donut" style="background:conic-gradient(#18a06a 0 60%,#f5b301 60% 90%,#d04a3a 90% 100%)"></div><div class="leg"><span>лёгкие 60%</span><span>средние 30%</span><span>сложные 10%</span></div></div></div>
+<div class="two"><div class="card"><h4>Активность по корпусам</h4>${bars([410,300,250,190],['Корпус А','Корпус Б','Корпус В','Корпус Г'])}</div><div class="card"><h4>Топ студентов</h4><table><tr><th>Студент</th><th>Задач</th><th>Корпус</th></tr>${T.map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td></tr>`).join('')}</table></div></div>
+<div class="card"><h4>Клубы</h4>${bars([52,38,31,17],['IT-клуб','Медиа','Спорт','Дебаты'])}</div>`},
+rules(){return `<h2 class="h">Правила платформы</h2><p class="sb2">Рамки, которые защищают студентов и университет.</p><div class="card"><p>EC — закрытая бонусная единица университета: не обменивается на тенге и не передаётся посторонним.</p><p>Запрещены задачи, влияющие на оценки и аттестацию, а также опасные работы без допуска и инструктажа (например, электромонтаж).</p><p>Месячный лимит заработка, квота лёгких задач для 1–2 курса, срок действия EC 12 месяцев, блокировка при академической задолженности по решению деканата.</p><p>Награда начисляется только после приёмки работы автором запроса; споры решает деканат.</p></div>`}};
+function modal(h){$('#m').innerHTML=`<div class="ov" id="ov"><div class="md">${h}</div></div>`;$('#ov').onclick=e=>{if(e.target.id==='ov')shut()}}
+const shut=()=>$('#m').innerHTML='';
+function team(k){modal(`<h2 class="h" style="font-size:20px">Команда: ${esc(k.t)}</h2><span class="mut">Распределите награду (${n(k.ec)} EC). Сумма должна быть 100%.</span>${['Вы',...PEERS].map((p,i)=>`<label class="row" style="justify-content:space-between">${p}<span><input type="range" class="sh" min="0" max="100" value="${i?33:34}"> <b class="v">${i?33:34}</b>%</span></label>`).join('')}<div>Сумма: <b id="sum">100</b>%</div><div class="row"><button class="btn p" id="tgo">Создать команду</button><button class="btn" id="tx">Отмена</button></div>`);
+const u=()=>{const s=[...$$('.sh')].reduce((a,x)=>{x.parentNode.querySelector('.v').textContent=x.value;return a+ +x.value},0);$('#sum').textContent=s;$('#tgo').disabled=s!==100};
+$$('.sh').forEach(x=>x.oninput=u);$('#tx').onclick=shut;$('#tgo').onclick=()=>{k.s='taken';k.mine=1;save();shut();toast('Команда создана, задача в работе');S.tab='my';go()}}
+function detail(k){modal(`<div class="row"><span class="tag d${k.d}">${DN[k.d]}</span>${k.team?'<span class="tag">команда</span>':''}</div><h2 class="h" style="font-size:21px">${esc(k.t)}</h2><p style="margin:0">${esc(k.x)}</p><div class="mut">Автор: ${esc(k.a)} · ${esc(k.b)}<br>Объём: ~${k.h} ч · Навыки: ${esc(k.sk)}</div><b style="font-size:24px">${n(k.ec)} EC</b><div class="row"><button class="btn p" id="dg">${k.team?'Создать команду':'Взять задачу'}</button><button class="btn" id="dx">Закрыть</button></div>`);$('#dx').onclick=shut;$('#dg').onclick=()=>{shut();take(k)}}
+function take(k){if(k.team)return team(k);k.s='taken';k.mine=1;save();toast('Задача взята в работу');S.tab='my';go()}
+function bind(){const q=(s,f)=>$$(s).forEach(f),by=i=>S.tasks.find(x=>x.id==i);
+q('[data-open]',e=>e.onclick=()=>detail(by(e.dataset.open)));q('[data-go]',e=>e.onclick=()=>{S.tab=e.dataset.go;go()});
+q('[data-sub]',e=>e.onclick=()=>{by(e.dataset.sub).s='review';save();toast('Отправлено на проверку');go()});
+q('[data-acc]',e=>e.onclick=()=>{const k=by(e.dataset.acc);k.s='done';S.bal+=k.ec;S.done++;S.tx.unshift([k.t,k.ec,'+']);save();boom();toast('Принято: студенту начислено '+n(k.ec)+' EC');go()});
+q('[data-buy]',e=>e.onclick=()=>{const[t,p]=e.dataset.buy.split('|');S.bal-=+p;S.tx.unshift([t,-p,'-']);save();boom();toast('Готово: '+t);go()});
+const sq=$('#sq');if(sq){const rf=()=>{$('#fg').innerHTML=grid();bind()};sq.oninput=()=>{S.q=sq.value;rf()};$('#fd').onchange=e=>{S.fd=+e.target.value;rf()};$('#fb').onchange=e=>{S.fb=e.target.value;rf()}}
+const p=$('#pub');if(p)p.onclick=()=>{const t=$('#nt').value.trim();if(!t)return toast('Введите название');S.tasks.unshift({id:Date.now(),t,a:'Деканат',b:$('#nb').value,d:+$('#nd').value,ec:+$('#ne').value||500,h:3,sk:'любые',x:$('#nx').value||'Подробности уточняйте у автора.',s:'open'});save();toast('Запрос опубликован: студенты его видят');S.role='stu';$('#role').value='stu';S.tab='free';go()}}
+function go(){const t=tabs[S.role];if(!t.some(x=>x[0]===S.tab))S.tab=t[0][0];count(S.shown,S.bal);S.shown=S.bal;
+$('#nav').innerHTML=`<button class="logo" id="lb"><span class="lg">YU</span>YU Tasks</button>`+t.map(x=>`<button class="t ${x[0]===S.tab?'on':''}" data-t="${x[0]}">${ico(x[1])}${x[2]}</button>`).join('')+`<div class="sb">Прототип, данные демонстрационные.<br><button id="rs">Сбросить демо</button></div>`;
+$$('#nav [data-t]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;go()});$('#lb').onclick=leave;$('#rs').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}S=load();S.shown=S.bal;toast('Демо сброшено');go()};
+$('#main').innerHTML=V[S.tab]();bind();$('#main').scrollIntoView({block:'start'});
+requestAnimationFrame(()=>setTimeout(()=>{$$('[data-w]').forEach(e=>e.style.width=e.dataset.w);$$('.ring').forEach(e=>e.style.strokeDashoffset=e.dataset.off)},60))}
+function enter(r){S.role=r;S.tab=tabs[r][0][0];$('#land').hidden=true;$('#app').hidden=false;$('#role').value=r;scrollTo(0,0);S.shown=S.bal;go()}
+function leave(){$('#app').hidden=true;$('#land').hidden=false;scrollTo(0,0)}
+$('#role').onchange=e=>{S.role=e.target.value;S.tab=tabs[S.role][0][0];go()};
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+$$('.rv').forEach((e,i)=>{e.style.transitionDelay=(i%4)*90+'ms';io.observe(e)});
+</script></body></html>
