@@ -15,7 +15,7 @@ type Config struct {
 
 func Load() (Config, error) {
 	cfg := Config{
-		Address:     value("YU_ADDR", ":8080"),
+		Address:     value("YU_ADDR", "127.0.0.1:8080"),
 		Environment: value("YU_ENV", "development"),
 		DBPath:      value("YU_DB_PATH", "./data/yu-tasks.db"),
 	}

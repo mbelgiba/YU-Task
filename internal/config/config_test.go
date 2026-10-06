@@ -21,3 +21,16 @@ func TestDevLoginAllowedInDevelopment(t *testing.T) {
 		t.Fatal("expected dev-login to be enabled")
 	}
 }
+
+func TestDefaultAddressIsLocalOnly(t *testing.T) {
+	t.Setenv("YU_ENV", "development")
+	t.Setenv("YU_ADDR", "")
+	t.Setenv("YU_DEV_LOGIN", "false")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Address != "127.0.0.1:8080" {
+		t.Fatalf("default address = %q, want loopback only", cfg.Address)
+	}
+}
