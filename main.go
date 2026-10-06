@@ -29,6 +29,7 @@ import (
 	"yu-tasks/internal/identity"
 	"yu-tasks/internal/ledger"
 	"yu-tasks/internal/platform/db"
+	"yu-tasks/seed"
 )
 
 //go:embed web migrations
@@ -96,6 +97,7 @@ type productResponse struct {
 	Description string `json:"description"`
 	PriceEC     int64  `json:"priceEc"`
 	Stock       int64  `json:"stock"`
+	Demo        bool   `json:"demo"`
 }
 
 func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity.Sessions) http.Handler {
@@ -251,6 +253,7 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 				writeError(w, http.StatusInternalServerError, "could not read catalog")
 				return
 			}
+			product.Demo = strings.HasPrefix(product.ID, "demo-")
 			products = append(products, product)
 		}
 		if err := rows.Err(); err != nil {
@@ -615,7 +618,7 @@ func ensureDevUser(ctx context.Context, database *sql.DB, role string) error {
 			return err
 		}
 	}
-	return nil
+	return seed.EnsureDevelopmentDemo(ctx, database, tenantID)
 }
 
 func queryTasks(w http.ResponseWriter, r *http.Request, database *sql.DB, session identity.Session, mine bool) {

@@ -205,6 +205,63 @@ func TestShopCatalogUsesStoredProductsAndStaffPermissions(t *testing.T) {
 	}
 }
 
+func TestDevelopmentDemoSeedsCatalogAndWelcomeBonusOnce(t *testing.T) {
+	store, err := db.Open(context.Background(), filepath.Join(t.TempDir(), "demo.db"), assets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	webFS, err := fs.Sub(assets, "web")
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := routes(webFS, config.Config{DevLogin: true}, store.DB, identity.NewSessions())
+	studentCookie, _ := loginAs(t, handler, "STUDENT")
+	productsResponse := apiCall(handler, http.MethodGet, "/api/products", "", studentCookie, "")
+	var catalog struct {
+		Products []productResponse `json:"products"`
+	}
+	if err := json.Unmarshal(productsResponse.Body.Bytes(), &catalog); err != nil {
+		t.Fatal(err)
+	}
+	if len(catalog.Products) != 3 {
+		t.Fatalf("demo catalog has %d products, want 3: %s", len(catalog.Products), productsResponse.Body.String())
+	}
+	for _, asset := range []string{"demo-course.svg", "demo-clothing.svg", "demo-food.svg"} {
+		image := httptest.NewRecorder()
+		handler.ServeHTTP(image, httptest.NewRequest(http.MethodGet, "http://127.0.0.1/assets/images/"+asset, nil))
+		if image.Code != http.StatusOK || !strings.Contains(image.Body.String(), "<svg") {
+			t.Errorf("demo image %s was not served as SVG: %d", asset, image.Code)
+		}
+	}
+	for _, item := range catalog.Products {
+		if !item.Demo || !strings.HasPrefix(item.ID, "demo-") {
+			t.Errorf("catalog item not marked as demo: %+v", item)
+		}
+	}
+	for attempt := 0; attempt < 2; attempt++ {
+		studentCookie, _ = loginAs(t, handler, "STUDENT")
+		balance := apiCall(handler, http.MethodGet, "/api/ledger/balance", "", studentCookie, "")
+		if balance.Code != http.StatusOK || !strings.Contains(balance.Body.String(), `"balanceEc":10000`) {
+			t.Fatalf("student welcome EC after login %d = %d %s", attempt+1, balance.Code, balance.Body.String())
+		}
+	}
+	var grants int
+	if err := store.DB.QueryRow(`SELECT COUNT(*) FROM ledger_operations WHERE tenant_id = 'pilot-yessenov' AND idempotency_key = 'demo-welcome-10000-v1:dev-student'`).Scan(&grants); err != nil {
+		t.Fatal(err)
+	}
+	if grants != 1 {
+		t.Fatalf("student welcome grant recorded %d times, want once", grants)
+	}
+	for _, role := range []string{"STUDENT", "STAFF", "DEAN_OFFICE", "RECTOR", "PLATFORM_OWNER"} {
+		cookie, _ := loginAs(t, handler, role)
+		balance := apiCall(handler, http.MethodGet, "/api/ledger/balance", "", cookie, "")
+		if balance.Code != http.StatusOK || !strings.Contains(balance.Body.String(), `"balanceEc":10000`) {
+			t.Errorf("%s demo welcome EC = %d %s", role, balance.Code, balance.Body.String())
+		}
+	}
+}
+
 func TestECIssuanceRequiresLimitsAndIsIdempotent(t *testing.T) {
 	store, err := db.Open(context.Background(), filepath.Join(t.TempDir(), "ec.db"), assets)
 	if err != nil {
@@ -224,11 +281,11 @@ func TestECIssuanceRequiresLimitsAndIsIdempotent(t *testing.T) {
 	if missingLimits.Code != http.StatusConflict {
 		t.Fatalf("issue without limits = %d, want 409: %s", missingLimits.Code, missingLimits.Body.String())
 	}
-	studentManage := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":100,"studentMonthlyEarningLimitEc":50}`, studentCookie, studentCSRF)
+	studentManage := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":10100,"studentMonthlyEarningLimitEc":10050}`, studentCookie, studentCSRF)
 	if studentManage.Code != http.StatusForbidden {
 		t.Fatalf("student set EC limits = %d, want 403", studentManage.Code)
 	}
-	saved := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":100,"studentMonthlyEarningLimitEc":50}`, deanCookie, deanCSRF)
+	saved := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":10100,"studentMonthlyEarningLimitEc":10050}`, deanCookie, deanCSRF)
 	if saved.Code != http.StatusOK {
 		t.Fatalf("save EC limits = %d: %s", saved.Code, saved.Body.String())
 	}
@@ -241,7 +298,7 @@ func TestECIssuanceRequiresLimitsAndIsIdempotent(t *testing.T) {
 		t.Fatalf("retry issue EC = %d: %s", issuedAgain.Code, issuedAgain.Body.String())
 	}
 	balance := apiCall(handler, http.MethodGet, "/api/ledger/balance", "", studentCookie, "")
-	if balance.Code != http.StatusOK || !strings.Contains(balance.Body.String(), `"balanceEc":25`) {
+	if balance.Code != http.StatusOK || !strings.Contains(balance.Body.String(), `"balanceEc":10025`) {
 		t.Fatalf("student balance after retry = %d %s", balance.Code, balance.Body.String())
 	}
 	var count, actorCount int

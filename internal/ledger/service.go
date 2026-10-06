@@ -16,6 +16,7 @@ var (
 	ErrPolicyExceeded      = errors.New("issuance limit exceeded")
 	ErrIdempotencyConflict = errors.New("idempotency key was already used for another operation")
 	ErrStudentNotFound     = errors.New("student account not found")
+	ErrAccountNotFound     = errors.New("account not found")
 )
 
 type Service struct{ db *sql.DB }
@@ -78,6 +79,34 @@ func (s *Service) Balance(ctx context.Context, tenantID, userID string) (int64, 
 	var balance int64
 	err := s.db.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount_ec), 0) FROM ledger_entries WHERE tenant_id = ? AND account_id = ?`, tenantID, "user:"+userID).Scan(&balance)
 	return balance, err
+}
+
+// EnsureDemoWelcomeBalance grants each local demo account 10,000 EC exactly
+// once. Call only from the development seed path, never from production flows.
+func (s *Service) EnsureDemoWelcomeBalance(ctx context.Context, tenantID, userID string) error {
+	if tenantID == "" || userID == "" {
+		return errors.New("tenant and demo account are required")
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin demo EC grant: %w", err)
+	}
+	defer tx.Rollback()
+	const amount = int64(10000)
+	const keyPrefix = "demo-welcome-10000-v1:"
+	key, account := keyPrefix+userID, "user:"+userID
+	if duplicate, err := checkDuplicate(ctx, tx, tenantID, key, userID, amount, account); err != nil {
+		return err
+	} else if duplicate {
+		return nil
+	}
+	var exists int
+	if err := tx.QueryRowContext(ctx, `SELECT 1 FROM users WHERE tenant_id = ? AND id = ?`, tenantID, userID).Scan(&exists); errors.Is(err, sql.ErrNoRows) {
+		return ErrAccountNotFound
+	} else if err != nil {
+		return fmt.Errorf("check demo account: %w", err)
+	}
+	return appendTransfer(ctx, tx, tenantID, "system:demo-welcome", key, "ISSUE", userID, "demo-welcome:university", account, amount)
 }
 
 func appendTransfer(ctx context.Context, tx *sql.Tx, tenantID, actorID, key, kind, referenceID, source, destination string, amount int64) error {
