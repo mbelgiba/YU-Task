@@ -1,4 +1,4 @@
-const pages = new Set(["home", "tasks", "work", "shop"]);
+const pages = new Set(["home", "tasks", "work", "shop", "rules"]);
 
 export function currentPage() {
   const route = location.hash.replace(/^#\/?/, "");

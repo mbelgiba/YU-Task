@@ -34,3 +34,12 @@ func TestDefaultAddressIsLocalOnly(t *testing.T) {
 		t.Fatalf("default address = %q, want loopback only", cfg.Address)
 	}
 }
+
+func TestDevLoginCannotBindToPublicInterface(t *testing.T) {
+	t.Setenv("YU_ENV", "development")
+	t.Setenv("YU_ADDR", "0.0.0.0:8080")
+	t.Setenv("YU_DEV_LOGIN", "true")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected dev-login to reject a non-loopback address")
+	}
+}
