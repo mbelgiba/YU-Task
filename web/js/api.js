@@ -58,6 +58,22 @@ export const disableProhibitedCategory = (csrfToken, id) => request(`/api/rules/
   body: "{}",
 });
 
+export const getLedgerRules = () => request("/api/rules/ledger");
+
+export const saveLedgerRules = (csrfToken, limits) => request("/api/rules/ledger", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+  body: JSON.stringify(limits),
+});
+
+export const issueEC = (csrfToken, requestData) => request("/api/ledger/issue", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+  body: JSON.stringify(requestData),
+});
+
+export const getECBalance = () => request("/api/ledger/balance");
+
 export const listProducts = () => request("/api/products");
 
 export const addProduct = (csrfToken, product) => request("/api/products", {

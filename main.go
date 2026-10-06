@@ -27,6 +27,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"yu-tasks/internal/config"
 	"yu-tasks/internal/identity"
+	"yu-tasks/internal/ledger"
 	"yu-tasks/internal/platform/db"
 )
 
@@ -81,6 +82,7 @@ type taskResponse struct {
 }
 
 type productInput struct {
+	Category    string `json:"category"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	PriceEC     int64  `json:"priceEc"`
@@ -89,6 +91,7 @@ type productInput struct {
 
 type productResponse struct {
 	ID          string `json:"id"`
+	Category    string `json:"category"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	PriceEC     int64  `json:"priceEc"`
@@ -113,13 +116,129 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 		}
 		writeJSON(w, http.StatusOK, map[string]any{"authenticated": true, "userId": session.UserID, "role": session.Role, "csrfToken": session.CSRF})
 	})
+	r.Get("/api/ledger/balance", func(w http.ResponseWriter, r *http.Request) {
+		session, ok := sessions.Get(r)
+		if !ok {
+			writeError(w, http.StatusUnauthorized, "sign in to view your EC balance")
+			return
+		}
+		balance, err := ledger.New(database).Balance(r.Context(), session.TenantID, session.UserID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not load EC balance")
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]int64{"balanceEc": balance})
+	})
+	r.Get("/api/rules/ledger", func(w http.ResponseWriter, r *http.Request) {
+		session, ok := sessions.Get(r)
+		if !ok || !mayManageRules(session.Role) {
+			writeError(w, http.StatusForbidden, "dean office access is required")
+			return
+		}
+		var emission, student int64
+		for _, setting := range []struct {
+			key   string
+			value *int64
+		}{
+			{"monthly_emission_limit_ec:pilot-building", &emission},
+			{"student_monthly_earning_limit_ec", &student},
+		} {
+			err := database.QueryRowContext(r.Context(), `SELECT CAST(rule_value AS INTEGER) FROM tenant_rules WHERE tenant_id = ? AND rule_key = ?`, session.TenantID, setting.key).Scan(setting.value)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				writeError(w, http.StatusInternalServerError, "could not load EC limits")
+				return
+			}
+		}
+		writeJSON(w, http.StatusOK, map[string]int64{"monthlyEmissionLimitEc": emission, "studentMonthlyEarningLimitEc": student})
+	})
+	r.Post("/api/rules/ledger", func(w http.ResponseWriter, r *http.Request) {
+		session, ok := sessions.Get(r)
+		if !ok || !mayManageRules(session.Role) {
+			writeError(w, http.StatusForbidden, "dean office access is required")
+			return
+		}
+		if !validCSRF(r, session) || !sameOrigin(r) {
+			writeError(w, http.StatusForbidden, "request could not be verified")
+			return
+		}
+		var input struct {
+			MonthlyEmissionLimitEC       int64 `json:"monthlyEmissionLimitEc"`
+			StudentMonthlyEarningLimitEC int64 `json:"studentMonthlyEarningLimitEc"`
+		}
+		if decodeJSON(w, r, &input) != nil || input.MonthlyEmissionLimitEC <= 0 || input.StudentMonthlyEarningLimitEC <= 0 {
+			writeError(w, http.StatusBadRequest, "both monthly limits must be positive whole EC amounts")
+			return
+		}
+		tx, err := database.BeginTx(r.Context(), nil)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not save EC limits")
+			return
+		}
+		defer tx.Rollback()
+		for _, setting := range []struct {
+			key   string
+			value int64
+		}{
+			{"monthly_emission_limit_ec:pilot-building", input.MonthlyEmissionLimitEC},
+			{"student_monthly_earning_limit_ec", input.StudentMonthlyEarningLimitEC},
+		} {
+			if _, err = tx.ExecContext(r.Context(), `INSERT INTO tenant_rules (tenant_id, rule_key, rule_value) VALUES (?, ?, ?) ON CONFLICT (tenant_id, rule_key) DO UPDATE SET rule_value = excluded.rule_value, updated_at = CURRENT_TIMESTAMP`, session.TenantID, setting.key, fmt.Sprint(setting.value)); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not save EC limits")
+				return
+			}
+		}
+		if err = recordAudit(r.Context(), tx, session, "EC_LIMITS_UPDATED", "tenant_rules", "pilot-building", r.RemoteAddr); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not record EC policy change")
+			return
+		}
+		if err = tx.Commit(); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not save EC limits")
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]int64{"monthlyEmissionLimitEc": input.MonthlyEmissionLimitEC, "studentMonthlyEarningLimitEc": input.StudentMonthlyEarningLimitEC})
+	})
+	r.Post("/api/ledger/issue", func(w http.ResponseWriter, r *http.Request) {
+		session, ok := sessions.Get(r)
+		if !ok || (session.Role != "DEAN_OFFICE" && session.Role != "RECTOR") {
+			writeError(w, http.StatusForbidden, "dean office or rector access is required")
+			return
+		}
+		if !validCSRF(r, session) || !sameOrigin(r) {
+			writeError(w, http.StatusForbidden, "request could not be verified")
+			return
+		}
+		var input struct {
+			StudentID      string `json:"studentId"`
+			AmountEC       int64  `json:"amountEc"`
+			IdempotencyKey string `json:"idempotencyKey"`
+		}
+		if decodeJSON(w, r, &input) != nil || input.AmountEC <= 0 || len(input.StudentID) > 120 || len(input.IdempotencyKey) < 16 || len(input.IdempotencyKey) > 120 {
+			writeError(w, http.StatusBadRequest, "student, positive EC amount and unique request key are required")
+			return
+		}
+		err := ledger.New(database).Issue(r.Context(), session.TenantID, "pilot-building", session.UserID, input.StudentID, input.AmountEC, input.IdempotencyKey)
+		switch {
+		case errors.Is(err, ledger.ErrPolicyMissing):
+			writeError(w, http.StatusConflict, "configure both EC limits before issuing bonus units")
+		case errors.Is(err, ledger.ErrPolicyExceeded):
+			writeError(w, http.StatusUnprocessableEntity, "configured EC limit would be exceeded")
+		case errors.Is(err, ledger.ErrStudentNotFound):
+			writeError(w, http.StatusNotFound, "student account was not found")
+		case errors.Is(err, ledger.ErrIdempotencyConflict):
+			writeError(w, http.StatusConflict, "request key has already been used")
+		case err != nil:
+			writeError(w, http.StatusInternalServerError, "could not issue EC bonus units")
+		default:
+			writeJSON(w, http.StatusCreated, map[string]int64{"issuedEc": input.AmountEC})
+		}
+	})
 	r.Get("/api/products", func(w http.ResponseWriter, r *http.Request) {
 		session, ok := sessions.Get(r)
 		if !ok {
 			writeError(w, http.StatusUnauthorized, "sign in to view the catalog")
 			return
 		}
-		rows, err := database.QueryContext(r.Context(), `SELECT id, name, description, price_ec, stock FROM products WHERE tenant_id = ? AND active = 1 ORDER BY created_at DESC LIMIT 100`, session.TenantID)
+		rows, err := database.QueryContext(r.Context(), `SELECT id, category, name, description, price_ec, stock FROM products WHERE tenant_id = ? AND active = 1 ORDER BY category, created_at DESC LIMIT 100`, session.TenantID)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not load catalog")
 			return
@@ -128,7 +247,7 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 		products := make([]productResponse, 0)
 		for rows.Next() {
 			var product productResponse
-			if err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.PriceEC, &product.Stock); err != nil {
+			if err := rows.Scan(&product.ID, &product.Category, &product.Name, &product.Description, &product.PriceEC, &product.Stock); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not read catalog")
 				return
 			}
@@ -155,7 +274,12 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 			writeError(w, http.StatusBadRequest, "invalid request body")
 			return
 		}
+		input.Category = strings.ToUpper(strings.TrimSpace(input.Category))
 		input.Name, input.Description = strings.TrimSpace(input.Name), strings.TrimSpace(input.Description)
+		if input.Category != "COURSE" && input.Category != "CLOTHING" && input.Category != "CAMPUS_FOOD" {
+			writeError(w, http.StatusBadRequest, "category must be COURSE, CLOTHING or CAMPUS_FOOD")
+			return
+		}
 		if len([]rune(input.Name)) < 2 || len([]rune(input.Name)) > 120 || len([]rune(input.Description)) > 1000 || input.PriceEC <= 0 || input.Stock < 0 {
 			writeError(w, http.StatusBadRequest, "check name, description, EC price and stock")
 			return
@@ -171,7 +295,7 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 			return
 		}
 		defer tx.Rollback()
-		if _, err = tx.ExecContext(r.Context(), `INSERT INTO products (id, tenant_id, name, description, price_ec, stock) VALUES (?, ?, ?, ?, ?, ?)`, id, session.TenantID, input.Name, input.Description, input.PriceEC, input.Stock); err != nil {
+		if _, err = tx.ExecContext(r.Context(), `INSERT INTO products (id, tenant_id, category, name, description, price_ec, stock) VALUES (?, ?, ?, ?, ?, ?, ?)`, id, session.TenantID, input.Category, input.Name, input.Description, input.PriceEC, input.Stock); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not save product")
 			return
 		}
@@ -183,7 +307,7 @@ func routes(webFS fs.FS, cfg config.Config, database *sql.DB, sessions *identity
 			writeError(w, http.StatusInternalServerError, "could not save product")
 			return
 		}
-		writeJSON(w, http.StatusCreated, productResponse{ID: id, Name: input.Name, Description: input.Description, PriceEC: input.PriceEC, Stock: input.Stock})
+		writeJSON(w, http.StatusCreated, productResponse{ID: id, Category: input.Category, Name: input.Name, Description: input.Description, PriceEC: input.PriceEC, Stock: input.Stock})
 	})
 	r.Post("/api/dev-login", func(w http.ResponseWriter, r *http.Request) {
 		if !cfg.DevLogin || !sameOrigin(r) {

@@ -189,19 +189,71 @@ func TestShopCatalogUsesStoredProductsAndStaffPermissions(t *testing.T) {
 	}
 	handler := routes(webFS, config.Config{DevLogin: true}, store.DB, identity.NewSessions())
 	staffCookie, staffCSRF := loginAs(t, handler, "STAFF")
-	productJSON := `{"name":"Вымышленная кружка","description":"Эта запись создана тестом и не появится в каталоге пилотной базы.","priceEc":25,"stock":3}`
+	productJSON := `{"category":"CLOTHING","name":"Тестовая футболка","description":"Эта запись создана тестом и не появится в каталоге пилотной базы.","priceEc":25,"stock":3}`
 	created := apiCall(handler, http.MethodPost, "/api/products", productJSON, staffCookie, staffCSRF)
 	if created.Code != http.StatusCreated {
 		t.Fatalf("staff add product = %d: %s", created.Code, created.Body.String())
 	}
 	studentCookie, _ := loginAs(t, handler, "STUDENT")
 	listed := apiCall(handler, http.MethodGet, "/api/products", "", studentCookie, "")
-	if listed.Code != http.StatusOK || !strings.Contains(listed.Body.String(), "Вымышленная кружка") {
+	if listed.Code != http.StatusOK || !strings.Contains(listed.Body.String(), "Тестовая футболка") || !strings.Contains(listed.Body.String(), "CLOTHING") {
 		t.Fatalf("stored product not shown to student: %d %s", listed.Code, listed.Body.String())
 	}
 	denied := apiCall(handler, http.MethodPost, "/api/products", productJSON, studentCookie, "test-token")
 	if denied.Code != http.StatusForbidden {
 		t.Fatalf("student add product = %d, want 403", denied.Code)
+	}
+}
+
+func TestECIssuanceRequiresLimitsAndIsIdempotent(t *testing.T) {
+	store, err := db.Open(context.Background(), filepath.Join(t.TempDir(), "ec.db"), assets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	webFS, err := fs.Sub(assets, "web")
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := routes(webFS, config.Config{DevLogin: true}, store.DB, identity.NewSessions())
+	deanCookie, deanCSRF := loginAs(t, handler, "DEAN_OFFICE")
+	studentCookie, studentCSRF := loginAs(t, handler, "STUDENT")
+
+	issueBody := `{"studentId":"dev-student","amountEc":25,"idempotencyKey":"request-key-0000001"}`
+	missingLimits := apiCall(handler, http.MethodPost, "/api/ledger/issue", issueBody, deanCookie, deanCSRF)
+	if missingLimits.Code != http.StatusConflict {
+		t.Fatalf("issue without limits = %d, want 409: %s", missingLimits.Code, missingLimits.Body.String())
+	}
+	studentManage := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":100,"studentMonthlyEarningLimitEc":50}`, studentCookie, studentCSRF)
+	if studentManage.Code != http.StatusForbidden {
+		t.Fatalf("student set EC limits = %d, want 403", studentManage.Code)
+	}
+	saved := apiCall(handler, http.MethodPost, "/api/rules/ledger", `{"monthlyEmissionLimitEc":100,"studentMonthlyEarningLimitEc":50}`, deanCookie, deanCSRF)
+	if saved.Code != http.StatusOK {
+		t.Fatalf("save EC limits = %d: %s", saved.Code, saved.Body.String())
+	}
+	issued := apiCall(handler, http.MethodPost, "/api/ledger/issue", issueBody, deanCookie, deanCSRF)
+	if issued.Code != http.StatusCreated {
+		t.Fatalf("issue EC = %d: %s", issued.Code, issued.Body.String())
+	}
+	issuedAgain := apiCall(handler, http.MethodPost, "/api/ledger/issue", issueBody, deanCookie, deanCSRF)
+	if issuedAgain.Code != http.StatusCreated {
+		t.Fatalf("retry issue EC = %d: %s", issuedAgain.Code, issuedAgain.Body.String())
+	}
+	balance := apiCall(handler, http.MethodGet, "/api/ledger/balance", "", studentCookie, "")
+	if balance.Code != http.StatusOK || !strings.Contains(balance.Body.String(), `"balanceEc":25`) {
+		t.Fatalf("student balance after retry = %d %s", balance.Code, balance.Body.String())
+	}
+	var count, actorCount int
+	if err := store.DB.QueryRow(`SELECT COUNT(*), COUNT(DISTINCT actor_id) FROM ledger_operations WHERE tenant_id = 'pilot-yessenov' AND idempotency_key = 'request-key-0000001'`).Scan(&count, &actorCount); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 || actorCount != 1 {
+		t.Fatalf("operations=%d distinct actors=%d; expected one recorded operation", count, actorCount)
+	}
+	tooMuch := apiCall(handler, http.MethodPost, "/api/ledger/issue", `{"studentId":"dev-student","amountEc":30,"idempotencyKey":"request-key-0000002"}`, deanCookie, deanCSRF)
+	if tooMuch.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("issue over student cap = %d, want 422: %s", tooMuch.Code, tooMuch.Body.String())
 	}
 }
 

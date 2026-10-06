@@ -12,6 +12,10 @@ import {
   publishTask,
   addProduct,
   takeTask,
+  getLedgerRules,
+  saveLedgerRules,
+  issueEC,
+  getECBalance,
 } from "./api.js";
 import { currentPage, onRouteChange } from "./router.js";
 import { icon } from "./components/icons.js";
@@ -23,10 +27,10 @@ const translations = {
     eyebrow: "Практика начинается здесь", title: "Делайте полезное. Растите на практике.", intro: "Задачи университета, в которых можно применить свои навыки, поработать с командой и получить признание за вклад.", noteTitle: "Для студентов Yessenov University", noteBody: "Выбирайте задачи по интересам и возможностям. Условия, сроки и награда будут указаны заранее.", photo: "[ФОТО: корпус, запросить у заказчика]",
     emptyLabel: "Новые задачи", emptyLabelTasks: "Открытые задачи", emptyLabelWork: "Моя активность", emptyLabelShop: "Каталог", emptyTitle: "Пока задач нет", emptyBody: "Когда подразделения университета опубликуют запросы, они появятся здесь. Загляните позже.", sectionTasks: "Что можно найти", sectionCaption: "Задачи появляются по мере публикации сотрудниками университета.", note1: "Небольшая задача", note1Body: "Короткое поручение, которое можно выполнить самостоятельно.", note2: "Работа по интересам", note2Body: "Выбирайте направление, где хотите получить практический опыт.", note3: "Командный проект", note3Body: "Объединяйтесь с другими студентами для более сложных задач.", notice: "EC — внутренняя бонусная единица университета. Она не отображается в тенге.",
     pageTasks: "Задачи университета", pageWork: "Моя работа", pageShop: "Магазин", pageRules: "Запрещённые категории", pageIntroTasks: "Просматривайте открытые запросы университета и выбирайте подходящие по теме и срокам.", pageIntroWork: "Здесь появятся задачи, за которые вы взялись, и история принятых работ.", pageIntroShop: "Каталог товаров университета. Цены указываются только во внутренних бонусных единицах EC.", pageIntroRules: "Деканат настраивает категории, которые нельзя публиковать. Сервер проверяет каждую новую задачу.",
-    pageEmptyTasks: "Пока нет открытых задач", pageEmptyWork: "Вы ещё не взяли задачу", pageEmptyShop: "Каталог пока пуст", emptyTasksBody: "Когда сотрудники университета опубликуют запросы, они появятся в этом списке.", emptyWorkBody: "После того как вы выберете задачу, здесь будут её статус и дальнейшие шаги.", emptyShopBody: "Добавьте подтверждённые товары университета — каталог покажет их здесь.", catalogTitle: "Каталог университета", catalogNote: "Покупка и оформление заказов появятся после реализации и проверки гроссбуха EC.", addProduct: "Добавить товар", productName: "Название товара", productDescription: "Описание", productPrice: "Цена, EC", productStock: "Количество", saveProduct: "Добавить в каталог", noProducts: "В каталоге пока нет товаров.", inStock: "Доступно", outOfStock: "Нет в наличии", productAdded: "Товар добавлен.",
+    pageEmptyTasks: "Пока нет открытых задач", pageEmptyWork: "Вы ещё не взяли задачу", pageEmptyShop: "Каталог пока пуст", emptyTasksBody: "Когда сотрудники университета опубликуют запросы, они появятся в этом списке.", emptyWorkBody: "После того как вы выберете задачу, здесь будут её статус и дальнейшие шаги.", emptyShopBody: "Добавьте подтверждённые товары университета — каталог покажет их здесь.", catalogTitle: "Каталог университета", catalogNote: "Покупка появится после настройки процесса заказов.", addProduct: "Добавить товар", productName: "Название товара", productDescription: "Описание", productCategory: "Раздел каталога", courseCategory: "Курсы", clothingCategory: "Одежда", foodCategory: "Еда в университете", uncategorized: "Без раздела", emptyCategory: "В этом разделе пока нет позиций.", productPrice: "Цена, EC", productStock: "Количество", saveProduct: "Добавить в каталог", noProducts: "В каталоге пока нет товаров.", inStock: "Доступно", outOfStock: "Нет в наличии", productAdded: "Товар добавлен.",
     localLogin: "Войти для разработки", roleLabel: "Роль для локального просмотра", loginButton: "Продолжить локально", signedAs: "Локальный режим", logout: "Выйти", noSession: "Включите YU_DEV_LOGIN=1 для локального входа.", noPermission: "У вашей роли нет доступа к этому разделу.",
     publishTitle: "Опубликовать задачу", titleLabel: "Короткий заголовок", descriptionLabel: "Что нужно сделать", categoryLabel: "Категория", difficultyLabel: "Сложность", easy: "Лёгкая", medium: "Средняя", hard: "Сложная", rewardLabel: "Награда, EC", publishButton: "Опубликовать", takeButton: "Взять задачу", loading: "Загружаем…", loadError: "Не удалось загрузить данные. Попробуйте обновить страницу.", taskPublished: "Задача опубликована.", taskTaken: "Задача добавлена в вашу работу.", noTasks: "Пока задач нет.", status: "Статус", open: "Открыта", taken: "В работе", inReview: "На проверке", accepted: "Принята", saving: "Сохраняем…", formError: "Проверьте поля и попробуйте ещё раз.",
-    rulesTitle: "Список запрещённых категорий", categoryNew: "Новая категория", reasonLabel: "Почему публикация запрещена", addRule: "Добавить категорию", disableRule: "Отключить", active: "Активна", disabled: "Отключена", ruleAdded: "Категория добавлена.", ruleDisabled: "Категория отключена.", noRules: "Категории не настроены.",
+    rulesTitle: "Список запрещённых категорий", categoryNew: "Новая категория", reasonLabel: "Почему публикация запрещена", addRule: "Добавить категорию", disableRule: "Отключить", active: "Активна", disabled: "Отключена", ruleAdded: "Категория добавлена.", ruleDisabled: "Категория отключена.", noRules: "Категории не настроены.", ecRulesTitle: "Внутренние бонусы EC", ecRulesNote: "EC — внутренняя бонусная единица; денежного обмена и вывода нет. Перед начислением задайте оба месячных лимита.", emissionLimit: "Месячный лимит подразделения, EC", studentLimit: "Лимит начисления одному студенту за месяц, EC", saveLimits: "Сохранить лимиты", limitsSaved: "Лимиты сохранены.", issueTitle: "Начислить EC студенту", studentID: "ID учётной записи студента", issueAmount: "Количество EC", issueButton: "Начислить бонусы", issueDone: "Бонусы начислены.", myBalance: "Мой баланс", balanceError: "Баланс пока недоступен.",
     footer: "YU Tasks · Yessenov University", theme: "Сменить тему", language: "Сменить язык"
   },
   en: {
@@ -34,10 +38,10 @@ const translations = {
     eyebrow: "Practice starts here", title: "Do useful work. Grow through practice.", intro: "University tasks where you can put your skills to use, work with a team, and have your contribution recognized.", noteTitle: "For Yessenov University students", noteBody: "Choose tasks that fit your interests and availability. Scope, deadlines, and rewards will be shown up front.", photo: "[PHOTO: campus building, request from client]",
     emptyLabel: "New tasks", emptyLabelTasks: "Open tasks", emptyLabelWork: "My activity", emptyLabelShop: "Catalog", emptyTitle: "No tasks yet", emptyBody: "Tasks will appear here when university departments publish requests. Check back later.", sectionTasks: "What you can find", sectionCaption: "Tasks appear as university staff publish requests.", note1: "A small task", note1Body: "A short assignment you can complete on your own.", note2: "Work that fits", note2Body: "Choose an area where you would like hands-on experience.", note3: "A team project", note3Body: "Join other students to take on more involved tasks.", notice: "EC is an internal university bonus unit. It is not shown in tenge.",
     pageTasks: "University tasks", pageWork: "My work", pageShop: "Shop", pageRules: "Prohibited categories", pageIntroTasks: "Browse open university requests and find ones that fit your interests and schedule.", pageIntroWork: "Tasks you take on and your accepted work history will appear here.", pageIntroShop: "The university product catalog. Prices are shown only in internal EC bonus units.", pageIntroRules: "The dean office configures categories that cannot be published. The server checks every new task.",
-    pageEmptyTasks: "No open tasks yet", pageEmptyWork: "You have not taken a task yet", pageEmptyShop: "The catalog is empty", emptyTasksBody: "University requests will appear here when staff publish them.", emptyWorkBody: "After you choose a task, its status and next steps will show here.", emptyShopBody: "Add approved university products and they will appear in this catalog.", catalogTitle: "University catalog", catalogNote: "Purchases and order checkout will be added after the EC ledger is implemented and reviewed.", addProduct: "Add a product", productName: "Product name", productDescription: "Description", productPrice: "Price, EC", productStock: "Quantity", saveProduct: "Add to catalog", noProducts: "No products in the catalog yet.", inStock: "Available", outOfStock: "Out of stock", productAdded: "Product added.",
+    pageEmptyTasks: "No open tasks yet", pageEmptyWork: "You have not taken a task yet", pageEmptyShop: "The catalog is empty", emptyTasksBody: "University requests will appear here when staff publish them.", emptyWorkBody: "After you choose a task, its status and next steps will show here.", emptyShopBody: "Add approved university products and they will appear in this catalog.", catalogTitle: "University catalog", catalogNote: "Purchases will be available after the order process is set up.", addProduct: "Add a product", productName: "Product name", productDescription: "Description", productCategory: "Catalog section", courseCategory: "Courses", clothingCategory: "Clothing", foodCategory: "Campus food", uncategorized: "Uncategorized", emptyCategory: "There are no items in this section yet.", productPrice: "Price, EC", productStock: "Quantity", saveProduct: "Add to catalog", noProducts: "No products in the catalog yet.", inStock: "Available", outOfStock: "Out of stock", productAdded: "Product added.",
     localLogin: "Local development sign in", roleLabel: "Role for local preview", loginButton: "Continue locally", signedAs: "Local mode", logout: "Sign out", noSession: "Set YU_DEV_LOGIN=1 to enable local sign in.", noPermission: "Your role cannot access this section.",
     publishTitle: "Publish a task", titleLabel: "Short title", descriptionLabel: "What needs to be done", categoryLabel: "Category", difficultyLabel: "Difficulty", easy: "Easy", medium: "Medium", hard: "Hard", rewardLabel: "Reward, EC", publishButton: "Publish task", takeButton: "Take task", loading: "Loading…", loadError: "Could not load data. Please refresh the page.", taskPublished: "Task published.", taskTaken: "Task added to your work.", noTasks: "No tasks yet.", status: "Status", open: "Open", taken: "In progress", inReview: "In review", accepted: "Accepted", saving: "Saving…", formError: "Check the fields and try again.",
-    rulesTitle: "Prohibited categories", categoryNew: "New category", reasonLabel: "Why publication is prohibited", addRule: "Add category", disableRule: "Disable", active: "Active", disabled: "Disabled", ruleAdded: "Category added.", ruleDisabled: "Category disabled.", noRules: "No categories configured.",
+    rulesTitle: "Prohibited categories", categoryNew: "New category", reasonLabel: "Why publication is prohibited", addRule: "Add category", disableRule: "Disable", active: "Active", disabled: "Disabled", ruleAdded: "Category added.", ruleDisabled: "Category disabled.", noRules: "No categories configured.", ecRulesTitle: "Internal EC bonuses", ecRulesNote: "EC is an internal bonus unit with no cash exchange or withdrawal. Set both monthly limits before issuing bonuses.", emissionLimit: "Department monthly limit, EC", studentLimit: "Monthly limit per student, EC", saveLimits: "Save limits", limitsSaved: "Limits saved.", issueTitle: "Issue EC to a student", studentID: "Student account ID", issueAmount: "EC amount", issueButton: "Issue bonus", issueDone: "Bonus issued.", myBalance: "My balance", balanceError: "Balance is not available yet.",
     footer: "YU Tasks · Yessenov University", theme: "Change theme", language: "Change language"
   }
 };
@@ -77,6 +81,7 @@ function taskForm() {
 
 function productForm() {
   return `<section class="publish-panel"><h2>${t("addProduct")}</h2><form id="product-form" class="form-grid">
+    <label>${t("productCategory")}<select name="category"><option value="COURSE">${t("courseCategory")}</option><option value="CLOTHING">${t("clothingCategory")}</option><option value="CAMPUS_FOOD">${t("foodCategory")}</option></select></label>
     <label>${t("productName")}<input name="name" required minlength="2" maxlength="120"></label>
     <label>${t("productPrice")}<input name="priceEc" type="number" min="1" step="1" required></label>
     <label class="wide-field">${t("productDescription")}<textarea name="description" maxlength="1000" rows="3"></textarea></label>
@@ -94,10 +99,12 @@ function pageContent(page) {
   if (page === "rules" && (!session.authenticated || !canManageRules(session.role))) return `<div class="page"><header class="subpage-header"><h1>${t(headingKey)}</h1><p class="intro">${t("noPermission")}</p></header></div>`;
   if (page === "rules") return `<div class="page"><header class="subpage-header"><p class="eyebrow">${t("rules")}</p><h1>${t(headingKey)}</h1><p class="intro">${t(introKey)}</p></header>
     <section class="publish-panel"><h2>${t("rulesTitle")}</h2><div id="rules-list" class="task-list"><div class="skeleton"><span class="skeleton-line"></span><span class="skeleton-line"></span></div></div>
-    <form id="rule-form" class="form-grid"><label>${t("categoryNew")}<input name="category" required minlength="2" maxlength="100"></label><label>${t("reasonLabel")}<input name="reason" required minlength="3" maxlength="300"></label><div class="wide-field"><button class="primary-button" type="submit">${t("addRule")}</button><p class="form-message" id="rule-message" aria-live="polite"></p></div></form></section></div>`;
-  if (page === "shop") return `<div class="page"><header class="subpage-header"><p class="eyebrow">${t("shop")}</p><h1>${t("pageShop")}</h1><p class="intro">${t("pageIntroShop")}</p></header>
+    <form id="rule-form" class="form-grid"><label>${t("categoryNew")}<input name="category" required minlength="2" maxlength="100"></label><label>${t("reasonLabel")}<input name="reason" required minlength="3" maxlength="300"></label><div class="wide-field"><button class="primary-button" type="submit">${t("addRule")}</button><p class="form-message" id="rule-message" aria-live="polite"></p></div></form></section>
+    <section class="publish-panel"><h2>${t("ecRulesTitle")}</h2><p>${t("ecRulesNote")}</p><form id="ec-limits-form" class="form-grid"><label>${t("emissionLimit")}<input name="monthlyEmissionLimitEc" type="number" min="1" step="1" required></label><label>${t("studentLimit")}<input name="studentMonthlyEarningLimitEc" type="number" min="1" step="1" required></label><div class="wide-field"><button class="primary-button" type="submit">${t("saveLimits")}</button><p class="form-message" id="ec-limits-message" aria-live="polite"></p></div></form>
+    ${(session.role === "DEAN_OFFICE" || session.role === "RECTOR") ? `<hr><h3>${t("issueTitle")}</h3><form id="ec-issue-form" class="form-grid"><label>${t("studentID")}<input name="studentId" required maxlength="120"></label><label>${t("issueAmount")}<input name="amountEc" type="number" min="1" step="1" required></label><div class="wide-field"><button class="primary-button" type="submit">${t("issueButton")}</button><p class="form-message" id="ec-issue-message" aria-live="polite"></p></div></form>` : ""}</section></div>`;
+  if (page === "shop") return `<div class="page"><header class="subpage-header"><p class="eyebrow">${t("shop")}</p><h1>${t("pageShop")}</h1><p class="intro">${t("pageIntroShop")}</p>${session.authenticated ? `<p class="ec-balance" id="ec-balance" aria-live="polite">${t("loading")}</p>` : ""}</header>
     ${session.authenticated && canPublish(session.role) ? productForm() : ""}<section class="catalog-section" aria-labelledby="catalog-title"><div class="section-head"><h2 id="catalog-title">${t("catalogTitle")}</h2></div>
-      <div id="product-list" class="catalog-grid"><div class="skeleton"><span class="skeleton-line"></span><span class="skeleton-line"></span></div></div><p class="catalog-note">${t("catalogNote")}</p></section><footer class="footer">${t("footer")} · [ВОПРОС: юр. владелец]</footer></div>`;
+    <div id="catalog-groups" class="catalog-groups"><div class="skeleton"><span class="skeleton-line"></span><span class="skeleton-line"></span></div></div><p class="catalog-note">${t("catalogNote")}</p></section><footer class="footer">${t("footer")} · [ВОПРОС: юр. владелец]</footer></div>`;
   const titleKey = page === "tasks" ? "pageTasks" : page === "work" ? "pageWork" : "pageShop";
   const intro = t(introKey);
   const canCreate = page === "tasks" && session.authenticated && canPublish(session.role);
@@ -159,7 +166,12 @@ async function loadRules() {
   const container = document.querySelector("#rules-list");
   if (!container) return;
   try {
-    const { categories } = await listProhibitedCategories();
+    const [{ categories }, limits] = await Promise.all([listProhibitedCategories(), getLedgerRules()]);
+    const limitsForm = document.querySelector("#ec-limits-form");
+    if (limitsForm) {
+      limitsForm.elements.monthlyEmissionLimitEc.value = limits.monthlyEmissionLimitEc || "";
+      limitsForm.elements.studentMonthlyEarningLimitEc.value = limits.studentMonthlyEarningLimitEc || "";
+    }
     if (!categories.length) { container.replaceChildren(element("p", "", t("noRules"))); return; }
     container.replaceChildren(...categories.map((rule) => {
       const row = element("article", "rule-row");
@@ -182,22 +194,36 @@ async function loadRules() {
 }
 
 async function loadProducts() {
-  const container = document.querySelector("#product-list");
+  const container = document.querySelector("#catalog-groups");
   if (!container) return;
   if (!session.authenticated) {
     container.replaceChildren(element("div", "task-empty", appConfig.devLogin ? t("localLogin") : t("noSession")));
     return;
   }
   try {
-    const { products } = await listProducts();
-    if (!products.length) { container.replaceChildren(element("div", "task-empty", t("noProducts"))); return; }
-    container.replaceChildren(...products.map((product) => {
-      const card = element("article", "product-card");
-      card.append(element("p", "product-price", `${product.priceEc} EC`));
-      card.append(element("h3", "product-title", product.name));
-      if (product.description) card.append(element("p", "task-card-description", product.description));
-      card.append(element("p", "product-stock", `${product.stock > 0 ? t("inStock") : t("outOfStock")}: ${product.stock}`));
-      return card;
+    const [{ products }, balance] = await Promise.all([listProducts(), getECBalance()]);
+    const balanceNode = document.querySelector("#ec-balance");
+    if (balanceNode) balanceNode.textContent = `${t("myBalance")}: ${balance.balanceEc} EC`;
+    const groups = ["COURSE", "CLOTHING", "CAMPUS_FOOD", ...(products.some((item) => item.category === "UNCATEGORIZED") ? ["UNCATEGORIZED"] : [])];
+    container.replaceChildren(...groups.map((category) => {
+      const group = element("section", "catalog-group");
+      const heading = category === "COURSE" ? "courseCategory" : category === "CLOTHING" ? "clothingCategory" : category === "CAMPUS_FOOD" ? "foodCategory" : "uncategorized";
+      group.append(element("h3", "catalog-heading", t(heading)));
+      const items = products.filter((product) => product.category === category);
+      if (!items.length) group.append(element("p", "catalog-empty", t("emptyCategory")));
+      else {
+        const grid = element("div", "catalog-grid");
+        grid.append(...items.map((product) => {
+          const card = element("article", "product-card");
+          card.append(element("p", "product-price", `${product.priceEc} EC`));
+          card.append(element("h4", "product-title", product.name));
+          if (product.description) card.append(element("p", "task-card-description", product.description));
+          card.append(element("p", "product-stock", `${product.stock > 0 ? t("inStock") : t("outOfStock")}: ${product.stock}`));
+          return card;
+        }));
+        group.append(grid);
+      }
+      return group;
     }));
   } catch { container.replaceChildren(element("div", "error-state", t("loadError"))); }
 }
@@ -238,12 +264,31 @@ async function render() {
     try { await addProhibitedCategory(session.csrfToken, data.get("category"), data.get("reason")); form.reset(); message.textContent = t("ruleAdded"); await loadRules(); }
     catch { message.textContent = t("formError"); }
   });
+  document.querySelector("#ec-limits-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget; const data = new FormData(form); const message = document.querySelector("#ec-limits-message");
+    try {
+      await saveLedgerRules(session.csrfToken, { monthlyEmissionLimitEc: Number(data.get("monthlyEmissionLimitEc")), studentMonthlyEarningLimitEc: Number(data.get("studentMonthlyEarningLimitEc")) });
+      message.textContent = t("limitsSaved");
+    } catch { message.textContent = t("formError"); }
+  });
+  document.querySelector("#ec-issue-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget; const data = new FormData(form); const message = document.querySelector("#ec-issue-message"); const button = form.querySelector("button[type=submit]");
+    button.disabled = true;
+    try {
+      const key = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      await issueEC(session.csrfToken, { studentId: data.get("studentId"), amountEc: Number(data.get("amountEc")), idempotencyKey: key });
+      message.textContent = t("issueDone"); form.reset();
+    } catch { message.textContent = t("formError"); }
+    button.disabled = false;
+  });
   document.querySelector("#product-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget; const button = form.querySelector("button[type=submit]"); const message = document.querySelector("#product-message"); const data = new FormData(form);
     button.disabled = true;
     try {
-      await addProduct(session.csrfToken, { name: data.get("name"), description: data.get("description"), priceEc: Number(data.get("priceEc")), stock: Number(data.get("stock")) });
+      await addProduct(session.csrfToken, { category: data.get("category"), name: data.get("name"), description: data.get("description"), priceEc: Number(data.get("priceEc")), stock: Number(data.get("stock")) });
       form.reset(); message.textContent = t("productAdded"); await loadProducts();
     } catch { message.textContent = t("formError"); }
     button.disabled = false;
